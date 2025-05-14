@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <!-- Category Dropdown -->
+    <select id="category" onchange="getSubcategories()">
+        <option value="">Select Category</option>
+        <!-- Populate Categories from PHP -->
+        <option value="1">Category 1</option>
+        <option value="2">Category 2</option>
+        <!-- Add more categories dynamically -->
+    </select>
+
+    <!-- Subcategory Dropdown -->
+    <select id="subcategory" onchange="loadProducts()">
+        <option value="">Select Subcategory</option>
+        <!-- Subcategories will be populated based on category selection -->
+    </select>
+
+    <!-- Div to display Products -->
+    <div id="products"></div>
+
+
+    <script>
+        // Load categories when the page loads
+        window.onload = function () {
+            fetchCategories();
+        };
+
+        function fetchCategories() {
+            fetch('categories.php')
+                .then(response => response.json())
+                .then(data => {
+                    const categoryDropdown = document.getElementById('category');
+                    data.forEach(category => {
+                        const option = document.createElement('option');
+                        option.value = category.id;
+                        option.text = category.name;
+                        categoryDropdown.appendChild(option);
+                    });
+                });
+        }
+
+    </script>
+    <script>
+        document.getElementById('subcategory').addEventListener('change', function () {
+            const subcategoryId = this.value;
+
+            if (subcategoryId) {
+                fetchProducts(subcategoryId);
+            } else {
+                document.getElementById('products-list').innerHTML = 'Please select a subcategory.';
+            }
+        });
+
+        function fetchProducts(subcategoryId) {
+            fetch(`products.php?subcategory_id=${subcategoryId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const productList = document.getElementById('products-list');
+                    productList.innerHTML = '';
+
+                    if (data.length === 0) {
+                        productList.innerHTML = 'No products found.';
+                        return;
+                    }
+
+                    data.forEach(product => {
+                        const productDiv = document.createElement('div');
+                        productDiv.classList.add('product-item');
+                        productDiv.innerHTML = `
+                    <h3>${product.name}</h3>
+                    <p>${product.description}</p>
+                    <p>Price: $${product.price}</p>
+                `;
+                        productList.appendChild(productDiv);
+                    });
+                });
+        }
+
+    </script>
+</body>
+
+</html>
